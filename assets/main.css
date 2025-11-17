@@ -1,0 +1,37 @@
+/* Font */
+@font-face {
+    font-family: "Modern DOS";
+    src: url("/assets/ModernDOS8x16.woff2");
+}
+
+/* Page styling */
+body {
+    margin: 0px;
+    padding: 10px;
+    background: #000;
+}
+
+/* Global text styles */
+* {
+    color: #fff;
+    font-size: 24px;
+    font-family: "Modern DOS";
+}
+pre {
+    margin: 0px;
+    line-height: 30px;
+}
+
+/* Input line */
+#input {
+    display: flex;
+    align-items: center;
+
+    input {
+        flex: 1;
+        padding: 0px;
+        border: none;
+        outline: none;
+        background: none;
+    }
+}

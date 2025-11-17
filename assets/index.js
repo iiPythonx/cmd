@@ -4,16 +4,23 @@ new class {
     constructor() {
         this.element = document.querySelector("main");
 
-        this.feed   = document.getElementById("input");
+        this.feed   = document.querySelector(".feed");
         this.prompt = this.feed.querySelector("pre");
         this.input  = this.feed.querySelector("input");
+
+        // Fun configuration
+        this.baud = +localStorage.getItem("baud") || 9600;
+        if (this.baud < 0 || this.baud > 230400) {
+            this.baud = 9600;
+            localStorage.setItem("baud", 9600);
+        }
 
         // Handle command ejection
         this.input.addEventListener("keydown", async (e) => {
             if (this.feed.style.display === "none") return;
             if (e.key === "Enter" && this.input.value) {
                 const value = this.input.value;
-                await this.write(`${this.prompt.innerText}${value}`, true);
+                await this.write(`${this.prompt.innerText}${value}`, { skip: true });
                 this.input.value = "";
 
                 // Hide feed
@@ -31,11 +38,13 @@ new class {
         this.register_commands();
     }
 
-    write(text, skip) {
+    write(text, data = {}) {
         const element = document.createElement("pre");
-        this.element.appendChild(element);
+        (data.parent || this.element).appendChild(element);
 
-        if (skip) {
+        window.scrollTo(0, document.body.scrollHeight);
+
+        if (data.skip) {
             element.innerText = text;
             return;
         }
@@ -47,7 +56,7 @@ new class {
                 element.textContent += text[i];
                 i++;
     
-                setTimeout(next, ((1 / 9600) * 1000) * 10);
+                setTimeout(next, ((1 / this.baud) * 1000) * 10);
             }
     
             next();
@@ -56,6 +65,36 @@ new class {
 
     blank() {
         this.element.appendChild(document.createElement("br"));
+    }
+
+    /*
+        Read an input stream from the end user, given
+        a prompt to pass to write.
+    */
+    async read(prompt) {
+        const div = document.createElement("div");
+        div.classList.add("feed");
+        this.element.appendChild(div);
+
+        // Push prompt into div
+        this.write(prompt, { parent: div });
+
+        // Setup input
+        const input = document.createElement("input");
+        div.appendChild(input);
+
+        input.focus();
+        return await new Promise((resolve) => {
+            input.addEventListener("keydown", (e) => {
+                if (e.key !== "Enter") return;
+
+                const value = e.target.value;
+                this.write(`${prompt}${value}`, { skip: true });
+
+                div.remove();
+                return resolve(value);
+            });
+        });
     }
 
     /*
@@ -76,7 +115,7 @@ new class {
     */
     async register_commands() {
         for (const module of ["terminal"]) {
-            const commands = await import(`./groups/${module}.js`);
+            const commands = await import(`/groups/${module}.js`);
             this.commands = { ...this.commands, ...commands };
         }
     }

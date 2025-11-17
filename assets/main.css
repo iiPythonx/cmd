@@ -23,15 +23,14 @@ pre {
 }
 
 /* Input line */
-#input {
+.feed {
     display: flex;
     align-items: center;
-
-    input {
-        flex: 1;
-        padding: 0px;
-        border: none;
-        outline: none;
-        background: none;
-    }
+}
+input {
+    flex: 1;
+    padding: 0px;
+    border: none;
+    outline: none;
+    background: none;
 }

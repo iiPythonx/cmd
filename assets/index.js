@@ -114,7 +114,7 @@ new class {
         mapping.
     */
     async register_commands() {
-        for (const module of ["terminal"]) {
+        for (const module of ["terminal", "games"]) {
             const commands = await import(`/groups/${module}.js`);
             this.commands = { ...this.commands, ...commands };
         }

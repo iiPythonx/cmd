@@ -1,3 +1,5 @@
+// Copyright (c) 2025 iiPython
+
 // Command
 const games = async (terminal, args) => {
     if (!args.length) return await terminal.write("games base command");
@@ -44,6 +46,9 @@ const games = async (terminal, args) => {
                 nes.update_sample_buffer(samples);
                 nesNode.port.postMessage({ type: "samples", samples }, [samples.buffer]);
             }
+
+            const blockRate = 44100 / bufferLength;
+            setInterval(pumpSamples, 1000 / blockRate);  
 
             // Set up screen resources
             const canvas = document.createElement("canvas");
@@ -103,8 +108,8 @@ const games = async (terminal, args) => {
             // animation frame loop
             const stepFrame = () => {
                 frame = requestAnimationFrame(stepFrame);
+                // pumpSamples();
                 nes.step_frame();
-                pumpSamples();
                 nes.update_pixels(pixels);
                 ctx.putImageData(imageData, 0, 0);
             };

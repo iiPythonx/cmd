@@ -38,15 +38,17 @@ new class {
         this.register_commands();
     }
 
+    scroll() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
     write(text, data = {}) {
         const element = document.createElement("pre");
         (data.parent || this.element).appendChild(element);
 
-        window.scrollTo(0, document.body.scrollHeight);
-
         if (data.skip) {
             element.innerText = text;
-            return;
+            return this.scroll();
         }
 
         return new Promise((resolve) => {
@@ -55,6 +57,8 @@ new class {
                 if (i >= text.length) return resolve();
                 element.textContent += text[i];
                 i++;
+
+                this.scroll();
     
                 setTimeout(next, ((1 / this.baud) * 1000) * 10);
             }
@@ -103,7 +107,7 @@ new class {
     */
     async launch_command(string) {
         const [ command, ...args ] = string.split(" ");
-        if (!(command in this.commands)) return this.write("not found");
+        if (!(command in this.commands)) return this.write("command not found");
 
         await this.commands[command](this, args);
     }
@@ -114,8 +118,8 @@ new class {
         mapping.
     */
     async register_commands() {
-        for (const module of ["terminal", "games"]) {
-            const commands = await import(`/groups/${module}.js`);
+        for (const module of ["general", "games"]) {
+            const commands = await import(`/js/groups/${module}.js`);
             this.commands = { ...this.commands, ...commands };
         }
     }

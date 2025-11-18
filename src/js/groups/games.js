@@ -34,21 +34,12 @@ const games = async (terminal, args) => {
             // Set up audo system
             const bufferLength = 4096;
             const context = new (AudioContext || webkitAudioContext)({ sampleRate: 44100 });
-            
-            await context.audioWorklet.addModule("/js/etc/nes-audio.js");
-            const nesNode = new AudioWorkletNode(context, "nes-audio", { outputChannelCount: [1] });
-
-            nesNode.port.postMessage({ type: "init" });
-            nesNode.connect(context.destination);
-
-            function pumpSamples() {
-                const samples = new Float32Array(bufferLength);
-                nes.update_sample_buffer(samples);
-                nesNode.port.postMessage({ type: "samples", samples }, [samples.buffer]);
-            }
-
-            const blockRate = 44100 / bufferLength;
-            setInterval(pumpSamples, 1000 / blockRate);  
+            const scriptProcessor = context.createScriptProcessor(bufferLength, 0, 1);
+            scriptProcessor.onaudioprocess = e => {
+                const data = e.outputBuffer.getChannelData(0);
+                nes.update_sample_buffer(data);
+            };
+            scriptProcessor.connect(context.destination);
 
             // Set up screen resources
             const canvas = document.createElement("canvas");
@@ -77,8 +68,8 @@ const games = async (terminal, args) => {
                     cancelAnimationFrame(frame);
 
                     // Free up audio stack
-                    nesNode.disconnect();
-                    nesNode.port.postMessage({ type: "shutdown" });
+                    scriptProcessor.disconnect();
+                    scriptProcessor.onaudioprocess = null;
                     context.close();
 
                     // Clean out WASM
@@ -108,7 +99,6 @@ const games = async (terminal, args) => {
             // animation frame loop
             const stepFrame = () => {
                 frame = requestAnimationFrame(stepFrame);
-                // pumpSamples();
                 nes.step_frame();
                 nes.update_pixels(pixels);
                 ctx.putImageData(imageData, 0, 0);

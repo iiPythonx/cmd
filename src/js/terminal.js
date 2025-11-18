@@ -67,7 +67,11 @@ new class {
         });
     }
 
-    blank() {
+    async clear() {
+        this.element.innerHTML = "";
+    }
+
+    async blank() {
         this.element.appendChild(document.createElement("br"));
     }
 

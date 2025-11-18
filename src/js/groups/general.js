@@ -6,6 +6,7 @@ const HELP_DETAILS = {
         "help": "you're already here",
         "about": "console information",
         "baud": "baud rate control",
+        "clear": "clear the screen",
     },
     "Games": {
         "games": "general settings",
@@ -22,7 +23,7 @@ const HELP_DETAILS = {
         "radio": "current radio info",
         "radio play": "tune in",
         "radio skip": "vote skip current song",
-        "radio volume {v}": "update radio volume",
+        "radio volume": "update radio volume",
         "radio stop": "stop radio :("
     }
 }
@@ -75,4 +76,7 @@ const about = async (terminal, args) => {
     await terminal.blank();
 }
 
-export { help, baud, about }
+// Clear
+const clear = async (terminal, args) => await terminal.clear();
+
+export { help, baud, about, clear }

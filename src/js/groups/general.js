@@ -21,13 +21,6 @@ const HELP_DETAILS = {
         "3a33": "send yourself to hell",
         "projects": "dump the project archive",
         "exec": "run javascript :3"
-    },
-    "Radio": {
-        "radio": "current radio info",
-        "radio play": "tune in",
-        "radio skip": "vote skip current song",
-        "radio volume": "update radio volume",
-        "radio stop": "stop radio :("
     }
 }
 

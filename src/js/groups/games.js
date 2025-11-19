@@ -1,11 +1,19 @@
 // Copyright (c) 2025 iiPython
 
+const GAME_LIST = [
+    "castlevania",
+    "mario",
+    "pacman",
+    "tetris",
+    "zelda"
+];
+
 // Command
-const games = async (terminal, args) => {
-    if (!args.length) return await terminal.write("games base command");
+const game = async (terminal, args) => {
+    if (!args.length) return await terminal.write("game: no rom provided to launch");
 
     const romName = args[0];
-    if (!["pacman", "mario", "tetris"].includes(romName)) return await terminal.write("invalid game name");
+    if (!GAME_LIST.includes(romName)) return await terminal.write("game: specified rom does not exist");
 
     // Lazy load in our components
     const { default: init, WasmNes, Button } = await import("/assets/nes/nes_rust_wasm.js");
@@ -111,4 +119,4 @@ const games = async (terminal, args) => {
     });
 }
 
-export { games }
+export { game }

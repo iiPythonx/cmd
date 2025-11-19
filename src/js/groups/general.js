@@ -9,15 +9,17 @@ const HELP_DETAILS = {
         "clear": "clear the screen",
     },
     "Games": {
-        "games": "general settings",
-        "games pacman": "eat some ghosts",
-        "games mario": "it's a me, a mario!",
-        "games tetris": "beep boop bam bop bow"
+        "game castlevania": "beat up some foes",
+        "game mario": "it's a me, a mario!",
+        "game pacman": "eat some ghosts",
+        "game tetris": "beep boop bam bop bow",
+        "game zelda": "sword? slash?? kachow???"
     },
     "Random": {
         "joke": "get a random joke",
         "3a33": "send yourself to hell",
         "projects": "dump the project archive",
+        "exec": "run javascript :3"
     },
     "Radio": {
         "radio": "current radio info",

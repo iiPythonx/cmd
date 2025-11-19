@@ -1,0 +1,12 @@
+[project]
+name = "cmd-backend"
+version = "0.1.0"
+description = "backend for cmd"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiosqlite>=0.21.0",
+    "argon2-cffi>=25.1.0",
+    "fastapi>=0.121.2",
+    "uvicorn[standard]>=0.38.0",
+]

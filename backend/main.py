@@ -124,7 +124,14 @@ class Database:
                 return False
 
         await self.db.execute("DELETE FROM messages WHERE message_id = ?", (message_id,))
+        await self.db.commit()
+
         return True
+
+    async def delete_account(self, username: str) -> None:
+        await self.db.execute("DELETE FROM users WHERE username = ?", (username,))
+        await self.db.execute("DELETE FROM messages WHERE recipient = ?", (username,))
+        await self.db.commit()
 
 db = Database()
 
@@ -138,8 +145,8 @@ async def lifespan(app: FastAPI) -> typing.AsyncGenerator:
 app = FastAPI(openapi_url = None, lifespan = lifespan)
 
 # Routing
-@app.post("/api/login")
-async def route_login(data: AuthPayload) -> JSONResponse:
+@app.post("/api/account/login")
+async def route_account_login(data: AuthPayload) -> JSONResponse:
     token = await db.login(data.username, data.password)
     if token is None:
         return JSONResponse(
@@ -149,13 +156,25 @@ async def route_login(data: AuthPayload) -> JSONResponse:
 
     return JSONResponse({"code": 200, "data": {"token": token}})
 
-@app.post("/api/register")
-async def route_register(data: AuthPayload) -> JSONResponse:
+@app.post("/api/account/register")
+async def route_account_register(data: AuthPayload) -> JSONResponse:
     token = await db.register(data.username, data.password)
     if token is None:
         return JSONResponse({"code": 400, "data": {"message": "Provided username is already taken."}}, status_code = 400)
 
     return JSONResponse({"code": 200, "data": {"token": token}})
+
+@app.post("/api/account/delete")
+async def route_account_delete(authorization: typing.Annotated[str, Header()]) -> JSONResponse:
+    username = await db.validate_token(authorization)
+    if username is None:
+        return JSONResponse({
+            "code": 403,
+            "data": {"message": "Invalid token provided."}
+        }, status_code = 403)
+
+    await db.delete_account(username)
+    return JSONResponse({"code": 200, "data": {"message": "Goodbye."}})
 
 @app.get("/api/inbox")
 async def route_inbox(authorization: typing.Annotated[str, Header()]) -> JSONResponse:

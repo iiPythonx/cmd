@@ -10,6 +10,15 @@ const HELP_DETAILS = {
         "theme": "set terminal theme",
         "fullscreen": "immerse yourself"
     },
+    "Account": {
+        "account": "check who you're logged in as",
+        "account login": "login to your account",
+        "account register": "create a shiny account",
+        "account delete": "delete your account",
+        "account logout": "it logs you out...",
+        "mail": "view your personal inbox",
+        "mail send": "send a message to a user"
+    },
     "Games": {
         "game castlevania": "beat up some foes",
         "game mario": "it's a me, a mario!",

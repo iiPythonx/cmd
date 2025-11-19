@@ -43,7 +43,7 @@ async function auth(terminal, type) {
     const username = await terminal.read("  Account name: ");
     const password = await terminal.read("  Password: ", "password");
 
-    const result = await request(type, { username, password });
+    const result = await request(`account/${type}`, { username, password });
     if (result.code !== 200) {
         await terminal.write("\n  Login failed.");
         if (result.detail) return await terminal.write(CONSTRAINT_INFO);
@@ -102,19 +102,36 @@ async function send_message(terminal, recipient, subject) {
     return await terminal.write("\n  * Message sent!");
 }
 
-export async function login(terminal) { await auth(terminal, "login"); }
-export async function register(terminal) { await auth(terminal, "register"); }
-
-export async function logout(terminal) {
-    if (!window._account_data) return await terminal.write("  * Not logged in.");
-
-    await terminal.write(`  Goodbye, ${window._account_data.username}.`);
-
-    localStorage.removeItem("account");
-    window._account_data = null;
-}
-
 export async function account(terminal, args) {
+    if (args) {
+        switch (args[0]) {
+            case "login":
+                return await auth(terminal, "login");
+
+            case "register":
+                return await auth(terminal, "register");
+
+            case "logout":
+                if (!window._account_data) return await terminal.write("  * Not logged in.");
+
+                await terminal.write(`  Goodbye, ${window._account_data.username}.`);
+
+                window._account_data = null;
+                return localStorage.removeItem("account");
+
+            case "delete":
+                if (!window._account_data) return await terminal.write("  * Not logged in.");
+
+                const result = await request("account/delete", {}, window._account_data.token);
+                if (result.code !== 200) return await terminal.write("  Account deletion failed, ensure your login state is correct.");
+
+                await terminal.write(`  Goodbye, ${window._account_data.username}.`);
+
+                window._account_data = null;
+                return localStorage.removeItem("account");
+        }
+    }
+
     if (!window._account_data) return await terminal.write("  * Not logged in.");
 
     await terminal.write(`  Account name: ${window._account_data.username}.`);

@@ -78,10 +78,6 @@ new class {
         this.element.appendChild(document.createElement("br"));
     }
 
-    /*
-        Read an input stream from the end user, given
-        a prompt to pass to write.
-    */
     async read(prompt) {
         const div = document.createElement("div");
         div.classList.add("feed");
@@ -108,10 +104,6 @@ new class {
         });
     }
 
-    /*
-        Given an unparsed command string, parse it and
-        run the relevant command.
-    */
     async launch_command(string) {
         const [ command, ...args ] = string.split(" ");
         if (!(command in this.commands)) return this.write("command not found");
@@ -119,11 +111,6 @@ new class {
         await this.commands[command](this, args);
     }
 
-    /*
-        Load each command group from the groups/ directory
-        and merge the objects together into a central command
-        mapping.
-    */
     async register_commands() {
         for (const module of ["general", "games", "random", "fun"]) {
             const commands = await import(`/js/groups/${module}.js`);

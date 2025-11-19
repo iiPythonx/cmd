@@ -46,6 +46,8 @@ new class {
         const element = document.createElement("pre");
         (data.parent || this.element).appendChild(element);
 
+        text += "\n";  // Force a newline
+
         if (data.skip) {
             element.innerText = text;
             this.scroll()

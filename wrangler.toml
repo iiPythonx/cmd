@@ -5,3 +5,11 @@ compatibility_date = "2025-01-01"
 [assets]
 directory = "./dist"
 binding = "ASSETS"
+
+[[routes]]
+pattern = "cmd.iipython.dev/api"
+zone_name = "iipython.dev"
+
+[[routes]]
+pattern = "cmd.iipython.dev/*"
+zone_name = "iipython.dev"

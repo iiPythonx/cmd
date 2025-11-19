@@ -7,7 +7,8 @@ const HELP_DETAILS = {
         "about": "console information",
         "baud": "baud rate control",
         "clear": "clear the screen",
-        "theme": "set terminal theme"
+        "theme": "set terminal theme",
+        "fullscreen": "immerse yourself"
     },
     "Games": {
         "game castlevania": "beat up some foes",
@@ -20,7 +21,8 @@ const HELP_DETAILS = {
         "joke": "get a random joke",
         "3a33": "send yourself to hell",
         "projects": "dump the project archive",
-        "exec": "run javascript :3"
+        "exec": "run javascript :3",
+        "time": "check the system time"
     }
 }
 
@@ -130,5 +132,10 @@ const theme = async (terminal, args) => {
 
 setTheme(+localStorage.getItem("theme") || 1);
 
+// Fullscreen
+const fullscreen = async (terminal, args) => {
+    document.documentElement.requestFullscreen();
+}
+
 // Export commands
-export { help, baud, about, clear, theme };
+export { help, baud, about, clear, theme, fullscreen };

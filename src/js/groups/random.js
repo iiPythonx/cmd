@@ -100,10 +100,16 @@ const projects = async (terminal, args) => {
     }
 }
 
+// Time
+const time = async (terminal, args) => {
+    await terminal.write((new Date()).toString());
+}
+
 export {
     joke,
     projects,
     exec,
+    time,
     threeathreethree as ":3",
     threeathreethree as "3a33",
 }

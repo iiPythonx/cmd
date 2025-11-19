@@ -48,13 +48,14 @@ new class {
 
         if (data.skip) {
             element.innerText = text;
-            return this.scroll();
+            this.scroll()
+            return element;
         }
 
         return new Promise((resolve) => {
             let i = 0;
             const next = () => {
-                if (i >= text.length) return resolve();
+                if (i >= text.length) return resolve(element);
                 element.textContent += text[i];
                 i++;
 

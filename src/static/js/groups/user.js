@@ -1,7 +1,7 @@
 // Copyright (c) 2025 iiPython
 // Command group - account management
 
-const API_URL = "http://localhost:8001/api";
+const API_URL = "/api";
 const CONSTRAINT_INFO = "    * Name: Must be between 3 and 32 characters long.\n    * Password: Must be at least 8 characters long.";
 
 window._account_data = JSON.parse(localStorage.getItem("account"));

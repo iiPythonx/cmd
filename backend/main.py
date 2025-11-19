@@ -152,4 +152,4 @@ async def route_message(authorization: typing.Annotated[str, Header()], data: Me
         })
 
     await db.message(username, data.recipient, data.subject, data.content)
-    return JSONResponse({"code": 201})
+    return JSONResponse({"code": 201}, status_code = 201)

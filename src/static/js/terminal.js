@@ -78,7 +78,7 @@ new class {
         this.element.appendChild(document.createElement("br"));
     }
 
-    async read(prompt) {
+    async read(prompt, type) {
         const div = document.createElement("div");
         div.classList.add("feed");
         this.element.appendChild(div);
@@ -88,6 +88,7 @@ new class {
 
         // Setup input
         const input = document.createElement("input");
+        input.type = type || "text";
         div.appendChild(input);
 
         input.focus();
@@ -96,7 +97,7 @@ new class {
                 if (e.key !== "Enter") return;
 
                 const value = e.target.value;
-                this.write(`${prompt}${value}`, { skip: true });
+                this.write(`${prompt}${type === "password" ? "*".repeat(value.length) : value}`, { skip: true });
 
                 div.remove();
                 return resolve(value);
@@ -112,7 +113,7 @@ new class {
     }
 
     async register_commands() {
-        for (const module of ["general", "games", "random", "fun"]) {
+        for (const module of ["general", "games", "random", "fun", "user"]) {
             const commands = await import(`/js/groups/${module}.js`);
             this.commands = { ...this.commands, ...commands };
         }

@@ -18,11 +18,15 @@ const HELP_DETAILS = {
         "game zelda": "sword? slash?? kachow???"
     },
     "Random": {
-        "joke": "get a random joke",
         "3a33": "send yourself to hell",
         "projects": "dump the project archive",
         "exec": "run javascript :3",
-        "time": "check the system time"
+        "time": "check the system time",
+        "coinflip": "flip a coin, heads or tails"
+    },
+    "Fun": {
+        "joke": "generate a random joke",
+        "8ball": "ask the magic 8ball a question",
     }
 }
 

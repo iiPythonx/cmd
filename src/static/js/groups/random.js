@@ -1,15 +1,5 @@
 // Copyright (c) 2025 iiPython
 
-// Joke
-const joke = async (terminal, args) => {
-    const result = await (await fetch("https://v2.jokeapi.dev/joke/Any")).json();
-    if (result.type === "single") return await terminal.write(result.joke);
-
-    await terminal.write(result.setup);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    await terminal.write(result.delivery);
-}
-
 // :3
 const threeathreethree = async (terminal, args) => {
     await terminal.write(":3");
@@ -105,11 +95,22 @@ const time = async (terminal, args) => {
     await terminal.write((new Date()).toString());
 }
 
+// Coinflip
+const coinflip = async(terminal, args) => {
+    return await new Promise(async (resolve) => {
+        await terminal.write("Flipping...");
+        setTimeout(async () => {
+            await terminal.write(Math.round(Math.random()) ? "Heads." : "Tails.");
+            resolve();
+        }, 1000);
+    });
+}
+
 export {
-    joke,
     projects,
     exec,
     time,
+    coinflip,
     threeathreethree as ":3",
     threeathreethree as "3a33",
 }

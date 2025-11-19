@@ -26,6 +26,9 @@ class MessagePayload(BaseModel):
     subject: typing.Annotated[str, StringConstraints(max_length = 100)]
     content: typing.Annotated[str, StringConstraints(min_length = 1, max_length = 2500)]
 
+class DeletePayload(BaseModel):
+    message_id: typing.Annotated[str, StringConstraints(min_length = 43, max_length = 43)]
+
 # Database
 class Database:
     def __init__(self) -> None:
@@ -37,8 +40,23 @@ class Database:
 
     async def init(self) -> None:
         self.db = await aiosqlite.connect("main.db")
-        await self.db.execute("CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password TEXT, token TEXT)")
-        await self.db.execute("CREATE TABLE IF NOT EXISTS messages (sender TEXT, recipient TEXT, subject TEXT, content TEXT, sent INTEGER)")
+        await self.db.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                username TEXT PRIMARY KEY,
+                password TEXT,
+                token    TEXT
+            )
+        """)
+        await self.db.execute("""
+            CREATE TABLE IF NOT EXISTS messages (
+                sender     TEXT,
+                recipient  TEXT,
+                subject    TEXT,
+                content    TEXT,
+                sent_at    INTEGER,
+                message_id TEXT
+            )
+        """)
 
     async def login(self, username: str, password: str) -> str | None:
         async with self.db.execute("SELECT password, token FROM users WHERE username = ?", (username,)) as view:
@@ -81,15 +99,32 @@ class Database:
             return bool(await result.fetchone())
 
     async def message(self, sender: str, recipient: str, subject: str, content: str) -> None:
-        await self.db.execute("INSERT INTO messages VALUES (?, ?, ?, ?, ?)", (sender, recipient, subject, content, round(time.time() * 1000)))
+        await self.db.execute("INSERT INTO messages VALUES (?, ?, ?, ?, ?, ?)", (
+            sender, recipient, subject, content, round(time.time() * 1000), secrets.token_urlsafe()
+        ))
         await self.db.commit()
 
     async def read_inbox(self, recipient: str) -> list[dict]:
-        results = await self.db.execute_fetchall("SELECT sender, subject, content, sent FROM messages WHERE recipient = ?", (recipient,))
+        results = await self.db.execute_fetchall("SELECT * FROM messages WHERE recipient = ?", (recipient,))
         return [
-            {"sender": sender, "recipient": recipient, "subject": subject, "content": content, "sent": sent}
-            for (sender, subject, content, sent) in results
+            {
+                name: message[index]
+                for index, name in enumerate(["sender", "recipient", "subject", "content", "sent_at", "message_id"])
+            }
+            for message in results
         ]
+
+    async def delete_message(self, recipient: str, message_id: str) -> bool:
+        async with self.db.execute("SELECT recipient FROM messages WHERE message_id = ?", (message_id,)) as result:
+            message = await result.fetchone()
+            if message is None:
+                return False
+
+            if message[0] != recipient:
+                return False
+
+        await self.db.execute("DELETE FROM messages WHERE message_id = ?", (message_id,))
+        return True
 
 db = Database()
 
@@ -118,9 +153,9 @@ async def route_login(data: AuthPayload) -> JSONResponse:
 async def route_register(data: AuthPayload) -> JSONResponse:
     token = await db.register(data.username, data.password)
     if token is None:
-        return JSONResponse({"code": 400, "data": {"message": "Provided username is already taken."}}, 200)
+        return JSONResponse({"code": 400, "data": {"message": "Provided username is already taken."}}, status_code = 400)
 
-    return JSONResponse({"code": 200, "data": {"token": token}}, 200)
+    return JSONResponse({"code": 200, "data": {"token": token}})
 
 @app.get("/api/inbox")
 async def route_inbox(authorization: typing.Annotated[str, Header()]) -> JSONResponse:
@@ -129,27 +164,45 @@ async def route_inbox(authorization: typing.Annotated[str, Header()]) -> JSONRes
         return JSONResponse({
             "code": 403,
             "data": {"message": "Invalid token provided."}
-        })
+        }, status_code = 403)
 
     return JSONResponse({
         "code": 200,
         "data": await db.read_inbox(username)
     })
 
-@app.post("/api/message")
-async def route_message(authorization: typing.Annotated[str, Header()], data: MessagePayload) -> JSONResponse:
+@app.post("/api/message/send")
+async def route_message_send(authorization: typing.Annotated[str, Header()], data: MessagePayload) -> JSONResponse:
     username = await db.validate_token(authorization)
     if username is None:
         return JSONResponse({
             "code": 403,
             "data": {"message": "Invalid token provided."}
-        })
+        }, status_code = 403)
 
     if not await db.validate_username(data.recipient):
         return JSONResponse({
             "code": 400,
             "data": {"message": "Invalid message recipient specified."}
-        })
+        }, status_code = 400)
 
     await db.message(username, data.recipient, data.subject, data.content)
     return JSONResponse({"code": 201}, status_code = 201)
+
+@app.post("/api/message/delete")
+async def route_message_delete(authorization: typing.Annotated[str, Header()], data: DeletePayload) -> JSONResponse:
+    username = await db.validate_token(authorization)
+    if username is None:
+        return JSONResponse({
+            "code": 403,
+            "data": {"message": "Invalid token provided."}
+        }, status_code = 403)
+
+    success = await db.delete_message(username, data.message_id)
+    if not success:
+        return JSONResponse({
+            "code": 403,
+            "data": {"message": "Invalid MID or missing authorization to delete it."}
+        }, status_code = 403)
+
+    return JSONResponse({"code": 200})

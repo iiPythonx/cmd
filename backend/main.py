@@ -211,6 +211,9 @@ async def route_account_register(data: AuthPayload) -> JSONResponse:
     if token is None:
         return JSONResponse({"code": 400, "data": {"message": "Provided username is already taken."}}, status_code = 400)
 
+    if data.username.lower() in ["admin", "update", "administrator", "moderator", "cmd"]:
+        return JSONResponse({"code": 400, "data": {"message": "Provided username is reserved by the system."}}, status_code = 400)
+
     return JSONResponse({"code": 200, "data": {"token": token}})
 
 @app.post("/api/account/delete")

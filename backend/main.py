@@ -61,8 +61,8 @@ class Database:
         """)
         await self.db.execute("""
             CREATE TABLE IF NOT EXISTS messages (
-                sender     TEXT,
-                recipient  TEXT,
+                sender     TEXT COLLATE NOCASE,
+                recipient  TEXT COLLATE NOCASE,
                 subject    TEXT,
                 content    TEXT,
                 sent_at    INTEGER,

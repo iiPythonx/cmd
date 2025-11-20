@@ -1,5 +1,15 @@
 [
     {
+        "version": "1.5.0",
+        "changed": [
+            "Added goostype command, monkeytype knockoff",
+            "Added biographies, moneys, typing personal bests, profile command",
+            "Added ability to update bio via `profile update`",
+            "Usernames are no longer case sensitive, including in messages",
+            "Some usernames have been restricted and can no longer be registered"
+        ]
+    },
+    {
         "version": "1.4.0",
         "changed": [
             "Fixed no blank line support in messages",

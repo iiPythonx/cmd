@@ -18,7 +18,19 @@ export const profile = {
         // Handle account updating
         if (username === "update") {
             if (!window._account_data) return await terminal.write("  * Not logged in.");
-            console.log("update account info");
+            await terminal.write("  Please type in a new biography to display on your profile.");
+            await terminal.write("  You can type '!!remove' to delete it.\n");
+
+            let bio = await terminal.read("  New bio (unchanged): ");
+            bio = bio === "!!remove" ? null : bio;
+
+            if (bio !== null && !bio.length) return;
+
+            // Post update
+            const response = await request("profile/update", { bio }, window._account_data.token);
+            if (response.detail) return await terminal.write("  * Failed to set bio, must be 75 characters max.");
+
+            return await terminal.write("  * Biography updated!");
         }
 
         // Show profile

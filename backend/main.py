@@ -37,6 +37,9 @@ class TypingPayload(BaseModel):
     logs: list[TypingLog]
     hits: int
 
+class ProfileUpdatePayload(BaseModel):
+    bio: typing.Annotated[str, StringConstraints(max_length = 75)] | None
+
 # Database
 class Database:
     def __init__(self) -> None:
@@ -153,8 +156,9 @@ class Database:
         await self.db.execute("DELETE FROM messages WHERE recipient = ?", (username,))
         await self.db.commit()
 
-    async def update_profile(self, username: str, bio: str) -> None:
-        await self.db.execute("UPDATE users SET bio = ? WHERE username = ?", (username,))
+    async def update_profile(self, username: str, bio: str | None) -> None:
+        await self.db.execute("UPDATE users SET bio = ? WHERE username = ?", (bio, username))
+        await self.db.commit()
 
     async def update_typing_pb(self, username: str, wpm: float, accuracy: float) -> bool:
         async with self.db.execute("SELECT pb_wpm FROM users WHERE username = ?", (username,)) as result:
@@ -343,3 +347,15 @@ async def route_profile(username: str) -> JSONResponse:
         "data": profile
     }, status_code = 200 if profile else 404)
 
+@app.post("/api/profile/update")
+async def route_profile_update(authorization: typing.Annotated[str, Header()], data: ProfileUpdatePayload) -> JSONResponse:
+    username = await db.validate_token(authorization)
+    if username is None:
+        return JSONResponse({
+            "code": 403,
+            "data": {"message": "Invalid token provided."}
+        }, status_code = 403)
+
+    await db.update_profile(username, data.bio)
+    return JSONResponse({"code": 200})
+    

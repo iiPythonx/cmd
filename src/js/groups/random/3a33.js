@@ -1,6 +1,6 @@
 export const threeathreethree = {
     name: "3a33",
-    category: "random",
+    group: "random",
     description: "send yourself to hell",
     command:  async (terminal) => {
         await terminal.write(":3");

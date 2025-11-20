@@ -1,6 +1,6 @@
 export const exec = {
     name: "exec",
-    category: "random",
+    group: "random",
     description: "run javascript :3",
     command: async (terminal, args) => {
         let result;

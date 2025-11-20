@@ -1,6 +1,6 @@
 export const fullscreen = {
     name: "fullscreen",
-    category: "terminal",
+    group: "terminal",
     description: "immerse yourself",
     command: document.documentElement.requestFullscreen
 }

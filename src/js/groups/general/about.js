@@ -1,6 +1,6 @@
 export const about = {
     name: "about",
-    category: "terminal",
+    group: "terminal",
     description: "console information",
     command: async (terminal) => {
         await terminal.write("   ___                    ___  ___ ");

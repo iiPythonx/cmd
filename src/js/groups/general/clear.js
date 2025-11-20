@@ -1,6 +1,6 @@
 export const clear = {
     name: "clear",
-    category: "terminal",
+    group: "terminal",
     description: "console information",
     command: async (terminal) => await terminal.clear()
 }

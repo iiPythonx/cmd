@@ -1,6 +1,6 @@
 export const joke = {
     name: "joke",
-    category: "fun",
+    group: "fun",
     description: "generate a random joke",
     command: async (terminal) => {
         const result = await (await fetch("https://v2.jokeapi.dev/joke/Any")).json();

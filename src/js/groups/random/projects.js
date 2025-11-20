@@ -9,7 +9,7 @@ const split = (s) => {
 
 export const projects = {
     name: "projects",
-    category: "random",
+    group: "random",
     description: "dump the project archive",
     command: async (terminal) => {
         if (!window._project_data) {

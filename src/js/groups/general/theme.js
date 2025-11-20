@@ -28,7 +28,7 @@ const setTheme = (id) => {
 
 export const theme = {
     name: "theme",
-    category: "terminal",
+    group: "terminal",
     description: "set terminal theme",
     command: async (terminal) => {
         await terminal.blank();

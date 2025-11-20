@@ -1,6 +1,6 @@
 export const baud = {
     name: "baud",
-    category: "terminal",
+    group: "terminal",
     description: "baud rate control",
     command: async (terminal) => {
         await terminal.write("  <Slow>         <Medium>         <Fast>");

@@ -104,7 +104,7 @@ async function send_message(terminal, recipient, subject) {
 
 export const account = {
     name: "account",
-    category: "account",
+    group: "account",
     description: "check who you're logged in as",
     subcommands: {
         "login": "login to your account",
@@ -151,7 +151,7 @@ export const account = {
 
 export const mail = {
     name: "mail",
-    category: "account",
+    group: "account",
     description: "view your personal inbox",
     subcommands: {
         "send": "send a message to a user"

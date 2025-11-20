@@ -12,7 +12,7 @@ const GAME_LIST = {
 
 export const game = {
     name: "game",
-    category: "games",
+    group: "games",
     visible: false,
     subcommands: GAME_LIST,
     command: async (terminal, args) => {

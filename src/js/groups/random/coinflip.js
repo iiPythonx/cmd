@@ -1,6 +1,6 @@
 export const coinflip = {
     name: "coinflip",
-    category: "random",
+    group: "random",
     description: "flip a coin, heads or tails",
     command: async(terminal) => {
         return await new Promise(async (resolve) => {

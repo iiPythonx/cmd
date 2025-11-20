@@ -23,7 +23,7 @@ const EIGHTBALL_MESSAGES = [
 
 export const eightball = {
     name: "8ball",
-    category: "fun",
+    group: "fun",
     description: "ask the magic 8-ball a question",
     command: async (terminal, args) => {
         if (!args.length) return await terminal.write("  Come back with a question.");

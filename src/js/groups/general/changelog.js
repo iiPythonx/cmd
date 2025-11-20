@@ -2,7 +2,7 @@ import log from "/src/assets/changelog.json";
 
 export const changelog = {
     name: "changelog",
-    category: "terminal",
+    group: "terminal",
     description: "view the cmd changelog",
     command: async (terminal) => {
         for (const release of log) {

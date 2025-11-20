@@ -1,13 +1,13 @@
 export const help = {
     name: "help",
-    category: "terminal",
+    group: "terminal",
     description: "you're already here",
     command: async (terminal) => {
         const logged = [];
         for (const command of terminal.commands) {
 
             // Handle grouping
-            const group = `${command.category.slice(0, 1).toUpperCase()}${command.category.slice(1, command.category.length)}`;
+            const group = `${command.group.slice(0, 1).toUpperCase()}${command.group.slice(1, command.group.length)}`;
             if (!logged.includes(group)) await terminal.write(`${logged.length ? "\n" : ""}  ${group}\n  ════════════════════════`);
             logged.push(group);
 

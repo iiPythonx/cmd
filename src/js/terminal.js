@@ -2,7 +2,7 @@
 
 const COMMAND_GROUPS = Object.values(import.meta.glob("./groups/*/*.js", { eager: true }));
 
-new class {
+window.terminal = new class {
     constructor() {
         this.element = document.querySelector("main");
 
@@ -125,6 +125,6 @@ new class {
             for (const command of Object.values(group)) this.commands.push(command);
         }
 
-        this.commands.sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
+        this.commands.sort((a, b) => a.group.localeCompare(b.group) || a.name.localeCompare(b.name));
     }
 };

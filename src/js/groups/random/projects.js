@@ -1,30 +1,3 @@
-// Copyright (c) 2025 iiPython
-
-export const threeathreethree = {
-    name: "3a33",
-    category: "random",
-    description: "send yourself to hell",
-    command:  async (terminal) => {
-        await terminal.write(":3");
-        setTimeout(() => { window.location.href = "https://3a33.dmmdgm.dev"; }, 500);
-    }
-}
-
-export const exec = {
-    name: "exec",
-    category: "random",
-    description: "run javascript :3",
-    command: async (terminal, args) => {
-        let result;
-        try {
-            result = eval(args.join(" "));
-            if (result === undefined) return await terminal.write("undefined");
-        } catch (e) { result = e; }
-        await terminal.write(result.toString());
-    }
-}
-
-// Projects
 const split = (s) => {
     const result = [];
     let regex = new RegExp("(.{1,80})(\\s|$)", "g");
@@ -100,27 +73,5 @@ export const projects = {
                 }
             }
         }
-    }
-}
-
-export const time = {
-    name: "time",
-    category: "random",
-    description: "check the system time",
-    command: async (terminal) =>  await terminal.write((new Date()).toString())
-}
-
-export const coinflip = {
-    name: "coinflip",
-    category: "random",
-    description: "flip a coin, heads or tails",
-    command: async(terminal) => {
-        return await new Promise(async (resolve) => {
-            await terminal.write("Flipping...");
-            setTimeout(async () => {
-                await terminal.write(Math.round(Math.random()) ? "Heads." : "Tails.");
-                resolve();
-            }, 1000);
-        });
     }
 }

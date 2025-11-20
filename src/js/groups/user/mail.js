@@ -1,60 +1,11 @@
-// Copyright (c) 2025 iiPython
-// Command group - account management
-
-const API_URL = "/api";
-const CONSTRAINT_INFO = "    * Name: Must be between 3 and 32 characters long.\n    * Password: Must be at least 8 characters long.";
-
-window._account_data = JSON.parse(localStorage.getItem("account"));
-
-function split(s) {
-    const result = [];
-    let regex = new RegExp("(.{1,80})(\\s|$)", "g");
-    let match;
-
-    while ((match = regex.exec(s)) !== null) result.push(match[1].trim());
-    return result;
-}
+import { split } from "/src/js/lib/split";
+import { request } from "/src/js/lib/auth";
 
 function format_date(t) {
     return new Date(t).toLocaleString("en-US", {
         month: "2-digit", day: "2-digit", year: "numeric",
         hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true,
     });
-}
-
-async function request(endpoint, data, authorization = "") {
-    return await (await fetch(
-        `${API_URL}/${endpoint}`,
-        {
-            method: data ? "POST" : "GET",
-            headers: {
-                "Authorization": authorization,
-                "Content-Type": "application/json"
-            },
-            body: data ? JSON.stringify(data) : null
-        }
-    )).json();
-}
-
-async function auth(terminal, type) {
-    if (window._account_data) return await terminal.write("  * You are already logged in.");
-
-    // Steal their information
-    const username = await terminal.read("  Account name: ");
-    const password = await terminal.read("  Password: ", "password");
-
-    const result = await request(`account/${type}`, { username, password });
-    if (result.code !== 200) {
-        await terminal.write("\n  Login failed.");
-        if (result.detail) return await terminal.write(CONSTRAINT_INFO);
-
-        return await terminal.write("    * " + result.data.message);
-    }
-
-    window._account_data = { token: result.data.token, username };
-    localStorage.setItem("account", JSON.stringify(window._account_data));
-
-    await terminal.write("\n  " + (type === "login" ? `Welcome back, ${username}.` : `Enjoy your new account, ${username}.`));
 }
 
 async function send_message(terminal, recipient, subject) {
@@ -100,53 +51,6 @@ async function send_message(terminal, recipient, subject) {
     }
         
     return await terminal.write("\n  * Message sent!");
-}
-
-export const account = {
-    name: "account",
-    group: "account",
-    description: "check who you're logged in as",
-    subcommands: {
-        "login": "login to your account",
-        "register": "create a shiny account",
-        "delete": "delete your account",
-        "logout": "it logs you out, duh"
-    },
-    command: async (terminal, args) => {
-        if (args) {
-            switch (args[0]) {
-                case "login":
-                    return await auth(terminal, "login");
-
-                case "register":
-                    return await auth(terminal, "register");
-
-                case "logout":
-                    if (!window._account_data) return await terminal.write("  * Not logged in.");
-
-                    await terminal.write(`  Goodbye, ${window._account_data.username}.`);
-
-                    window._account_data = null;
-                    return localStorage.removeItem("account");
-
-                case "delete":
-                    if (!window._account_data) return await terminal.write("  * Not logged in.");
-
-                    const result = await request("account/delete", {}, window._account_data.token);
-                    if (result.code !== 200) return await terminal.write("  Account deletion failed, ensure your login state is correct.");
-
-                    await terminal.write(`  Goodbye, ${window._account_data.username}.`);
-
-                    window._account_data = null;
-                    return localStorage.removeItem("account");
-            }
-        }
-
-        if (!window._account_data) return await terminal.write("  * Not logged in.");
-
-        await terminal.write(`  Account name: ${window._account_data.username}.`);
-        await terminal.write(`  Token: ${args[0] === "token" ? window._account_data.token : "(redacted, view via `account token`)"}.`);
-    }
 }
 
 export const mail = {
@@ -222,9 +126,15 @@ export const mail = {
                 await terminal.write(`** Message ${tab === "inbox" ? `from ${message.sender}` : `to ${message.recipient}`} **\n════════════════════════════════════════════════\n`);
 
                 if (message.subject) await terminal.write(`  Subject: ${message.subject}\n`);
-                for (const line of split(message.content)) await terminal.write("  " + line.trim());
+                for (const line of message.content.split(/\n/)) {
+                    if (!line.trim()) {
+                        await terminal.blank();
+                        continue;
+                    }
+                    for (const chunk of split(line)) await terminal.write("  " + chunk.trim());
+                }
 
-                await terminal.write("\n════════════════════════════════════════════════\n");
+                await terminal.write("════════════════════════════════════════════════\n");
                 await terminal.write(`  Sent at: ${format_date(message.sent_at)}`);
                 await terminal.write(`  Message ID: ${message.message_id}`);
 

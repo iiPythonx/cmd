@@ -1,11 +1,4 @@
-const split = (s) => {
-    const result = [];
-    let regex = new RegExp("(.{1,80})(\\s|$)", "g");
-    let match;
-
-    while ((match = regex.exec(s)) !== null) result.push(match[1].trim());
-    return result;
-}
+import { split } from "/src/js/lib/split";
 
 export const projects = {
     name: "projects",
@@ -38,10 +31,10 @@ export const projects = {
             }
 
             await terminal.write("\nType 'next' to go to the next page, 'back' to reverse.\nEnter a project name or ID to view more details about it.");
-            await terminal.write("\nLeave at any time by typing 'quit' or 'exit'.");
+            await terminal.write("\nLeave at any time by typing 'q', 'quit' or 'exit'.");
 
             const command = await terminal.read(">> ");
-            if (command == "quit" || command == "exit") break;
+            if (command == "q" || command == "quit" || command == "exit") break;
 
             // Next and back
             if (command == "next" && !dead) {

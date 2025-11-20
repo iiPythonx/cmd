@@ -107,15 +107,18 @@ new class {
 
     async launch_command(string) {
         const [ command, ...args ] = string.split(" ");
-        if (!(command in this.commands)) return this.write("command not found");
+        for (const available_command of this.commands) {
+            if (command === available_command.name) return available_command.command(this, args);
+        }
 
-        await this.commands[command](this, args);
+        return this.write("command not found");
     }
 
     async register_commands() {
+        this.commands = [];
         for (const module of ["general", "games", "random", "fun", "user"]) {
             const commands = await import(`/js/groups/${module}.js`);
-            this.commands = { ...this.commands, ...commands };
+            for (const command of Object.values(commands)) this.commands.push(command);
         }
     }
 };

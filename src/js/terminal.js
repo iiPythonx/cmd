@@ -61,8 +61,8 @@ new class {
             let i = 0;
             const next = () => {
                 if (i >= text.length) return resolve(element);
-                const j = Math.floor(this.baud * (Date.now() - start) / 1000 / 10);  // hai what is the 10 in this context
-                                                                                     // also in my testing with this new system, 25 works better
+                const j = Math.floor(this.baud * (Date.now() - start) / 1000 / 25);
+
                 element.textContent += text.slice(i, j);
                 i = j;
 

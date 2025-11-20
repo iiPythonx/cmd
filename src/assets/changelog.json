@@ -1,5 +1,11 @@
 [
     {
+        "version": "1.5.1",
+        "changed": [
+            "Added radio command"
+        ]
+    },
+    {
         "version": "1.5.0",
         "changed": [
             "Added goostype command, monkeytype knockoff",

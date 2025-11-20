@@ -1,13 +1,17 @@
 // Copyright (c) 2025 iiPython
 
-// Joke
-const joke = async (terminal, args) => {
-    const result = await (await fetch("https://v2.jokeapi.dev/joke/Any")).json();
-    if (result.type === "single") return await terminal.write(result.joke);
+export const joke = {
+    name: "joke",
+    category: "fun",
+    description: "generate a random joke",
+    command: async (terminal) => {
+        const result = await (await fetch("https://v2.jokeapi.dev/joke/Any")).json();
+        if (result.type === "single") return await terminal.write(result.joke);
 
-    await terminal.write(result.setup);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    await terminal.write(result.delivery);
+        await terminal.write(result.setup);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await terminal.write(result.delivery);
+    }
 }
 
 // Eightball
@@ -34,17 +38,17 @@ const EIGHTBALL_MESSAGES = [
     "Very doubtful."
 ];
 
-const eightball = async (terminal, args) => {
-    if (!args.length) return await terminal.write("  Come back with a question.");
+export const eightball = {
+    name: "8ball",
+    category: "fun",
+    description: "ask the magic 8-ball a question",
+    command: async (terminal, args) => {
+        if (!args.length) return await terminal.write("  Come back with a question.");
 
-    const message = args.join(" ");
-    await terminal.write(`  ${message}?`);
+        const message = args.join(" ");
+        await terminal.write(`  ${message}?`);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    await terminal.write(`  ${EIGHTBALL_MESSAGES[Math.floor(Math.random() * EIGHTBALL_MESSAGES.length)]}`);
-};
-
-export {
-    joke,
-    eightball as "8ball"
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await terminal.write(`  ${EIGHTBALL_MESSAGES[Math.floor(Math.random() * EIGHTBALL_MESSAGES.length)]}`);
+    }
 }

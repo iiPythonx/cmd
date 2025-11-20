@@ -1,93 +1,79 @@
 // Copyright (c) 2025 iiPython
 
-// Help command
-const HELP_DETAILS = {
-    "Terminal": {
-        "help": "you're already here",
-        "about": "console information",
-        "baud": "baud rate control",
-        "clear": "clear the screen",
-        "theme": "set terminal theme",
-        "fullscreen": "immerse yourself"
-    },
-    "Account": {
-        "account": "check who you're logged in as",
-        "account login": "login to your account",
-        "account register": "create a shiny account",
-        "account delete": "delete your account",
-        "account logout": "it logs you out...",
-        "mail": "view your personal inbox",
-        "mail send": "send a message to a user"
-    },
-    "Games": {
-        "game castlevania": "beat up some foes",
-        "game mario": "it's a me, a mario!",
-        "game pacman": "eat some ghosts",
-        "game tetris": "beep boop bam bop bow",
-        "game zelda": "sword? slash?? kachow???"
-    },
-    "Random": {
-        "3a33": "send yourself to hell",
-        "projects": "dump the project archive",
-        "exec": "run javascript :3",
-        "time": "check the system time",
-        "coinflip": "flip a coin, heads or tails"
-    },
-    "Fun": {
-        "joke": "generate a random joke",
-        "8ball": "ask the magic 8ball a question",
-    }
-}
+export const help = {
+    name: "help",
+    category: "terminal",
+    description: "you're already here",
+    command: async (terminal) => {
+        const logged = [];
+        for (const command of terminal.commands) {
 
-const help = async (terminal, args) => {
-    for (const group in HELP_DETAILS) {
-        await terminal.write(`  ${group}`);
-        await terminal.write(`  ════════════════════════`);
+            // Handle grouping
+            const group = `${command.category.slice(0, 1).toUpperCase()}${command.category.slice(1, command.category.length)}`;
+            if (!logged.includes(group)) await terminal.write(`${logged.length ? "\n" : ""}  ${group}\n  ════════════════════════`);
+            logged.push(group);
 
-        // Commands
-        for (const command in HELP_DETAILS[group]) {
-            const description = HELP_DETAILS[group][command];
-            const spacing = ".".repeat(40 - command.length);
-            await terminal.write(`      ${command} ${spacing} ${description}`);
+            // Command info
+            const log = async (name, description) => {
+                const spacing = ".".repeat(40 - name.length);
+                await terminal.write(`      ${name} ${spacing} ${description}`);
+            }
+
+            if (command.visible !== false) await log(command.name, command.description);
+
+            // Subcommands
+            const subcommands = command.subcommands || {};
+            for (const name in subcommands) await log(`${command.name} ${name}`, subcommands[name]);
         }
-        terminal.blank();
     }
 }
 
-// Baud rate
-const baud = async (terminal, args) => {
-    await terminal.write("  <Slow>         <Medium>         <Fast>");
-    await terminal.write("  300 1200 4800 9600 38400 115200 230400");
-    await terminal.blank();
-    await terminal.write(`  Current value: ${terminal.baud} baud`);
-
-    // Fetch input
-    const input = await terminal.read("  New value (unchanged): ");
-    if (!input.length) return;
-
-    const new_baud = +input;
-    if (new_baud > 0 && new_baud <= 230400) {
-        terminal.baud = new_baud;
-        localStorage.setItem("baud", new_baud);
-        return await terminal.write("  Baud rate updated.");
+export const baud = {
+    name: "baud",
+    category: "terminal",
+    description: "baud rate control",
+    command: async (terminal) => {
+        await terminal.write("  <Slow>         <Medium>         <Fast>");
+        await terminal.write("  300 1200 4800 9600 38400 115200 230400");
+        await terminal.blank();
+        await terminal.write(`  Current value: ${terminal.baud} baud`);
+        
+        // Fetch input
+        const input = await terminal.read("  New value (unchanged): ");
+        if (!input.length) return;
+        
+        const new_baud = +input;
+        if (new_baud > 0 && new_baud <= 230400) {
+            terminal.baud = new_baud;
+            localStorage.setItem("baud", new_baud);
+            return await terminal.write("  Baud rate updated.");
+        }
+        
+        await terminal.write("  Invalid baud rate provided.");
     }
-
-    await terminal.write("  Invalid baud rate provided.");
-};
-
-// About
-const about = async (terminal, args) => {
-    await terminal.write("   ___                    ___  ___ ");
-    await terminal.write("  / __|___ ___ ___ ___   / _ \\/ __|");
-    await terminal.write(" | (_ / -_) -_|_-</ -_) | (_) \\__ \\");
-    await terminal.write("  \\___\\___\\___/__/\\___|  \\___/|___/\n");
-    await terminal.write("  Geese OS - Terminal edition™");
-    await terminal.write("  Inspired by the late 2017 website, cmd.to and cmd.fm.\n");
-    await terminal.write(`  Running version 1.2.0, on ${window.location.hostname}.\n`);
 }
 
-// Clear
-const clear = async (terminal, args) => await terminal.clear();
+export const about = {
+    name: "about",
+    category: "terminal",
+    description: "console information",
+    command: async (terminal) => {
+        await terminal.write("   ___                    ___  ___ ");
+        await terminal.write("  / __|___ ___ ___ ___   / _ \\/ __|");
+        await terminal.write(" | (_ / -_) -_|_-</ -_) | (_) \\__ \\");
+        await terminal.write("  \\___\\___\\___/__/\\___|  \\___/|___/\n");
+        await terminal.write("  Geese OS - Terminal edition™");
+        await terminal.write("  Inspired by the late 2017 website, cmd.to and cmd.fm.\n");
+        await terminal.write(`  Running version 1.2.0, on ${window.location.hostname}.\n`);
+    }
+}
+
+export const clear = {
+    name: "clear",
+    category: "terminal",
+    description: "console information",
+    command: async (terminal) => await terminal.clear()
+}
 
 // Theming
 const THEMES = [
@@ -118,45 +104,53 @@ const setTheme = (id) => {
     }
 }
 
-const theme = async (terminal, args) => {
-    await terminal.blank();
-    for (const index in THEMES) {
-        const element = await terminal.write(`Theme ${+index + 1}`);
-        element.style.background = THEMES[index].bg;
-        element.style.color = THEMES[index].fg;
-        element.classList.add("theme-preview");
+export const theme = {
+    name: "theme",
+    category: "terminal",
+    description: "set terminal theme",
+    command: async (terminal) => {
+        await terminal.blank();
+        for (const index in THEMES) {
+            const element = await terminal.write(`Theme ${+index + 1}`);
+            element.style.background = THEMES[index].bg;
+            element.style.color = THEMES[index].fg;
+            element.classList.add("theme-preview");
+        }
+
+        // Ask for theme update
+        await terminal.write(`\n  Current theme: ${+localStorage.getItem('theme') || 1}`);
+        const input = await terminal.read("  New theme (unchanged): ");
+        if (!input.length) return;
+
+        const new_theme = +input;
+        if (THEMES[new_theme - 1]) {
+            localStorage.setItem("theme", new_theme);
+            setTheme(new_theme);
+            return await terminal.write("  Terminal theme updated.");
+        }
+
+        await terminal.write("  Invalid theme specified.");
     }
-
-    // Ask for theme update
-    await terminal.write(`\n  Current theme: ${+localStorage.getItem('theme') || 1}`);
-    const input = await terminal.read("  New theme (unchanged): ");
-    if (!input.length) return;
-
-    const new_theme = +input;
-    if (THEMES[new_theme - 1]) {
-        localStorage.setItem("theme", new_theme);
-        setTheme(new_theme);
-        return await terminal.write("  Terminal theme updated.");
-    }
-
-    await terminal.write("  Invalid theme specified.");
-};
+}
 
 setTheme(+localStorage.getItem("theme") || 1);
 
-// Fullscreen
-const fullscreen = async (terminal, args) => {
-    document.documentElement.requestFullscreen();
+export const fullscreen = {
+    name: "fullscreen",
+    category: "terminal",
+    description: "immerse yourself",
+    command: document.documentElement.requestFullscreen
 }
 
-// Changelog
-const changelog = async (terminal, args) => {
-    for (const release of await (await fetch("/assets/changelog.json")).json()) {
-        await terminal.write(`  ${release.version}\n  ════════════════════════`);
-        for (const change of release.changed) await terminal.write(`    * ${change}`);
-        await terminal.blank();
+export const changelog = {
+    name: "changelog",
+    category: "terminal",
+    description: "view the cmd changelog",
+    command: async (terminal) => {
+        for (const release of await (await fetch("/assets/changelog.json")).json()) {
+            await terminal.write(`  ${release.version}\n  ════════════════════════`);
+            for (const change of release.changed) await terminal.write(`    * ${change}`);
+            await terminal.blank();
+        }
     }
 }
-
-// Export commands
-export { help, baud, about, clear, theme, fullscreen, changelog };

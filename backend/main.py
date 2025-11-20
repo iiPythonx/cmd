@@ -29,6 +29,14 @@ class MessagePayload(BaseModel):
 class DeletePayload(BaseModel):
     message_id: typing.Annotated[str, StringConstraints(min_length = 43, max_length = 43)]
 
+class TypingLog(typing.TypedDict):
+    key: str
+    offset: int
+
+class TypingPayload(BaseModel):
+    logs: list[TypingLog]
+    hits: int
+
 # Database
 class Database:
     def __init__(self) -> None:
@@ -44,7 +52,11 @@ class Database:
             CREATE TABLE IF NOT EXISTS users (
                 username TEXT PRIMARY KEY,
                 password TEXT,
-                token    TEXT
+                token    TEXT,
+                pb_wpm   FLOAT,
+                pb_acc   FLOAT,
+                moneyz   INT DEFAULT 0,
+                bio      TEXT
             )
         """)
         await self.db.execute("""
@@ -82,7 +94,7 @@ class Database:
     async def register(self, username: str, password: str) -> str | None:
         try:
             token = secrets.token_urlsafe()
-            await self.db.execute("INSERT INTO users VALUES (?, ?, ?)", (username, self.argon2.hash(password), token))
+            await self.db.execute("INSERT INTO users (username, password, token) VALUES (?, ?, ?)", (username, self.argon2.hash(password), token))
             await self.db.commit()
             return token
 
@@ -140,6 +152,22 @@ class Database:
         await self.db.execute("DELETE FROM users WHERE username = ?", (username,))
         await self.db.execute("DELETE FROM messages WHERE recipient = ?", (username,))
         await self.db.commit()
+
+    async def update_profile(self, username: str, bio: str) -> None:
+        await self.db.execute("UPDATE users SET bio = ? WHERE username = ?", (username,))
+
+    async def update_typing_pb(self, username: str, wpm: float, accuracy: float) -> bool:
+        async with self.db.execute("SELECT pb_wpm FROM users WHERE username = ?", (username,)) as result:
+            result = await result.fetchone()
+            if result is None or (wpm > (result[0] or 0)):
+                await self.db.execute(
+                    "UPDATE users SET pb_wpm = ?, pb_acc = ? WHERE username = ?",
+                    (round(wpm, 2), round(accuracy, 2), username)
+                )
+                await self.db.commit()
+                return True
+
+            return False
 
 db = Database()
 
@@ -247,3 +275,46 @@ async def route_message_delete(authorization: typing.Annotated[str, Header()], d
         }, status_code = 403)
 
     return JSONResponse({"code": 200})
+
+@app.post("/api/typing")
+async def route_typing(authorization: typing.Annotated[str, Header()], data: TypingPayload) -> JSONResponse:
+    username = await db.validate_token(authorization)
+    if username is None:
+        return JSONResponse({
+            "code": 403,
+            "data": {"message": "Invalid token provided."}
+        }, status_code = 403)
+
+    # Calculate offsets
+    keypress_times = [
+        abs(moment["offset"] - data.logs[index - 1]["offset"])
+        for index, moment in enumerate(data.logs) if index > 0
+    ]
+    if len(keypress_times) > 160:
+        return JSONResponse({"code": 400, "data": {"message": "0A"}}, status_code = 400)
+
+    # Any hit < 5ms
+    if any([_ for _ in keypress_times if _ < 2]):
+        return JSONResponse({"code": 400, "data": {"message": "1A"}}, status_code = 400)
+
+    # Average < 10ms
+    average_delay = sum(keypress_times) / len(keypress_times)
+    if average_delay < 10:
+        print("average less than 10ms")
+        return JSONResponse({"code": 400, "data": {"message": "1B"}}, status_code = 400)
+
+    # Check hits
+    if data.hits < 0 or data.hits > 161:
+        return JSONResponse({"code": 400, "data": {"message": "2"}}, status_code = 400)
+
+    # Calculate run details
+    elapsed  = data.logs[-1]["offset"] / 1000
+    if elapsed < 5.65:
+        return JSONResponse({"code": 400, "data": {"message": "3"}}, status_code = 400)
+
+    accuracy = data.hits / 161
+    return JSONResponse({"code": 200, "data": {"best": await db.update_typing_pb(
+        username,
+        ((12 * 161) / elapsed) * accuracy,
+        accuracy * 100
+    )}})

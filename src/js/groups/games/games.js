@@ -1,5 +1,7 @@
 // Copyright (c) 2025 iiPython
 
+import { default as init, WasmNes, Button } from "/src/assets/nes_rust_wasm";
+
 const GAME_LIST = {
     "castlevania": "beat up some foes",
     "mario": "it's a me, a mario!",
@@ -19,9 +21,6 @@ export const game = {
         const romName = args[0];
         if (!(romName in GAME_LIST)) return await terminal.write("game: specified rom does not exist");
 
-        // Lazy load in our components
-        const { default: init, WasmNes, Button } = await import("/src/assets/nes/nes_rust_wasm.js");
-        
         // Button mapping
         const BUTTON_MAPPING = {
             " ": Button.Start,
@@ -37,11 +36,11 @@ export const game = {
         
         // Initialize NES emulator
         await new Promise((resolve) => {
-            init().then(async (wasm) => {
+            init("/nes/nes_rust_wasm_bg.wasm").then(async (wasm) => {
                 const nes = WasmNes.new();
 
                 // Load ROM
-                nes.set_rom(new Uint8Array(await (await fetch(`/assets/roms/${romName}.nes`)).arrayBuffer()));
+                nes.set_rom(new Uint8Array(await (await fetch(`/nes/roms/${romName}.nes`)).arrayBuffer()));
 
                 // Set up audo system
                 const bufferLength = 4096;

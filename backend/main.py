@@ -104,15 +104,23 @@ class Database:
         ))
         await self.db.commit()
 
-    async def read_inbox(self, recipient: str) -> list[dict]:
-        results = await self.db.execute_fetchall("SELECT * FROM messages WHERE recipient = ?", (recipient,))
+    @staticmethod
+    def serialize_messages(messages: typing.Iterable) -> list[dict]:
         return [
             {
                 name: message[index]
                 for index, name in enumerate(["sender", "recipient", "subject", "content", "sent_at", "message_id"])
             }
-            for message in results
+            for message in messages
         ]
+
+    async def read_inbox(self, recipient: str) -> list[dict]:
+        results = await self.db.execute_fetchall("SELECT * FROM messages WHERE recipient = ?", (recipient,))
+        return self.serialize_messages(results)
+
+    async def read_outbox(self, sender: str) -> list[dict]:
+        results = await self.db.execute_fetchall("SELECT * FROM messages WHERE sender = ?", (sender,))
+        return self.serialize_messages(results)
 
     async def delete_message(self, recipient: str, message_id: str) -> bool:
         async with self.db.execute("SELECT recipient FROM messages WHERE message_id = ?", (message_id,)) as result:
@@ -188,6 +196,20 @@ async def route_inbox(authorization: typing.Annotated[str, Header()]) -> JSONRes
     return JSONResponse({
         "code": 200,
         "data": await db.read_inbox(username)
+    })
+
+@app.get("/api/outbox")
+async def route_outbox(authorization: typing.Annotated[str, Header()]) -> JSONResponse:
+    username = await db.validate_token(authorization)
+    if username is None:
+        return JSONResponse({
+            "code": 403,
+            "data": {"message": "Invalid token provided."}
+        }, status_code = 403)
+
+    return JSONResponse({
+        "code": 200,
+        "data": await db.read_outbox(username)
     })
 
 @app.post("/api/message/send")

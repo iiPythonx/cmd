@@ -145,13 +145,13 @@ export async function mail(terminal, args) {
     if (args[0] === "send") return await send_message(terminal);
 
     // Pagination
-    let page = 0, refetch = true, mail = null;
+    let page = 0, refetch = true, mail = null, tab = "inbox";
     while (true) {
         await terminal.clear();
 
         // Fetch mail?
         if (refetch) {
-            mail = await request("inbox", null, window._account_data.token);
+            mail = await request(tab, null, window._account_data.token);
             if (mail.code !== 200) return await terminal.write("  * An error occured while reading your inbox.");
 
             mail.data.sort((m1, m2) => m1.sent_at <= m2.sent_at);
@@ -160,7 +160,7 @@ export async function mail(terminal, args) {
         // List mail
         const pages = Math.ceil(mail.data.length / 10);
         if (mail.data.length) {
-            await terminal.write(`** Mailbox - Page ${page + 1} / ${pages} **`);
+            await terminal.write(`** Mailbox - ${tab === "inbox" ? "Inbox" : "Sent"} - Page ${page + 1} / ${pages} **`);
             for (let i = 0; i < 10; i++) {
                 const message = mail.data[i + (10 * page)];
                 if (!message) break;
@@ -169,15 +169,27 @@ export async function mail(terminal, args) {
                 await terminal.write(`  [${i + (10 * page) + 1}] ${message.subject || "(no subject)"} - ${message.sender} @ ${date}`);
             }
     
-            await terminal.write("\n  * You got mail!");
-        } else { await terminal.write("** Mailbox **\n\n  * You have no mail :("); }
+            if (tab === "inbox") await terminal.write("\n  * You got mail!");
+        } else { await terminal.write(`** Mailbox - ${tab === "inbox" ? "Inbox" : "Sent"} - Empty **\n\n  * You${tab === "inbox" ? " have" : "'ve sent"} no mail :(`); }
         
         // Prompt for user action
         await terminal.write("\nActions: back (b), next (n), refetch (r), exit (quit, q)");
+        await terminal.write("Available tabs: inbox (i), sent (s)\n");
         await terminal.write("Type a Message ID to view it.\n");
 
         const action = (await terminal.read("  Action >> ")).toLowerCase();
         if (action == "q" || action == "quit" || action == "exit") break;
+
+        // Tab switching
+        if (action == "inbox" || action == "i") {
+            tab = "inbox";
+            refetch = true;
+            continue;
+        } else if (action == "sent" || action == "s") {
+            tab = "outbox";
+            refetch = true;
+            continue;
+        }
 
         // Handle refetching from server
         if (action == "r" || action == "refetch") {
@@ -189,7 +201,7 @@ export async function mail(terminal, args) {
         const message = mail.data[+action - 1];
         if (message) {
             await terminal.clear();
-            await terminal.write(`** Message from ${message.sender} **\n════════════════════════════════════════════════\n`);
+            await terminal.write(`** Message ${tab === "inbox" ? `from ${message.sender}` : `to ${message.recipient}`} **\n════════════════════════════════════════════════\n`);
 
             if (message.subject) await terminal.write(`  Subject: ${message.subject}\n`);
             for (const line of split(message.content)) await terminal.write("  " + line.trim());
@@ -199,10 +211,13 @@ export async function mail(terminal, args) {
             await terminal.write(`  Message ID: ${message.message_id}`);
 
             // Prompt for user action
-            await terminal.write("\nActions: delete (d), reply (r)");
+            await terminal.write(`\nActions: ${tab === "inbox" ? "delete (d), reply (r)" : "none available"}`);
             await terminal.write("Type anything else or just press ENTER to go back.\n");
 
             const action = (await terminal.read("  Action >> ")).toLowerCase();
+            if (tab !== "inbox") continue;
+
+            // Delete
             if (action == "d" || action == "delete") {
                 await request("message/delete", { message_id: message.message_id }, window._account_data.token);
                 refetch = true;

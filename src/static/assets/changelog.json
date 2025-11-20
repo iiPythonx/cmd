@@ -1,0 +1,26 @@
+[
+    {
+        "version": "1.2.0",
+        "changed": [
+            "Added changelog command",
+            "Added ability to view sent messages"
+        ]
+    },
+    {
+        "version": "1.1.0",
+        "changed": [
+            "Added account functionality",
+            "Added messaging functionality",
+            "Added new 'fun' command group",
+            "Added new '8ball' command",
+            "Added new 'coinflip' command",
+            "Joke command moved from 'random' to 'fun'"
+        ]
+    },
+    {
+        "version": "1.0.0",
+        "changed": [
+            "Initial release"
+        ]
+    }
+]

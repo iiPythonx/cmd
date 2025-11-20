@@ -83,7 +83,7 @@ const about = async (terminal, args) => {
     await terminal.write("  \\___\\___\\___/__/\\___|  \\___/|___/\n");
     await terminal.write("  Geese OS - Terminal edition™");
     await terminal.write("  Inspired by the late 2017 website, cmd.to and cmd.fm.\n");
-    await terminal.write(`  Running version 1.0.0, on ${window.location.hostname}.\n`);
+    await terminal.write(`  Running version 1.2.0, on ${window.location.hostname}.\n`);
 }
 
 // Clear
@@ -149,5 +149,14 @@ const fullscreen = async (terminal, args) => {
     document.documentElement.requestFullscreen();
 }
 
+// Changelog
+const changelog = async (terminal, args) => {
+    for (const release of await (await fetch("/assets/changelog.json")).json()) {
+        await terminal.write(`  ${release.version}\n  ════════════════════════`);
+        for (const change of release.changed) await terminal.write(`    * ${change}`);
+        await terminal.blank();
+    }
+}
+
 // Export commands
-export { help, baud, about, clear, theme, fullscreen };
+export { help, baud, about, clear, theme, fullscreen, changelog };

@@ -9,6 +9,6 @@ export const about = {
         await terminal.write("  \\___\\___\\___/__/\\___|  \\___/|___/\n");
         await terminal.write("  Geese OS - Terminal edition™");
         await terminal.write("  Inspired by the late 2017 website, cmd.to and cmd.fm.\n");
-        await terminal.write(`  Running version 1.2.0, on ${window.location.hostname}.\n`);
+        await terminal.write(`  Running version 1.3.0, on ${window.location.hostname}.\n`);
     }
 }

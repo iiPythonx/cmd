@@ -1,6 +1,6 @@
 // Copyright (c) 2025 iiPython
 
-const COMMAND_GROUPS = Object.values(import.meta.glob("./groups/*.js", { eager: true }));
+const COMMAND_GROUPS = Object.values(import.meta.glob("./groups/*/*.js", { eager: true }));
 
 new class {
     constructor() {
@@ -122,6 +122,6 @@ new class {
             for (const command of Object.values(group)) this.commands.push(command);
         }
 
-        this.commands.sort((a, b) => a.category >= b.category);
+        this.commands.sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
     }
 };

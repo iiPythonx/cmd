@@ -50,7 +50,7 @@ class Database:
         self.db = await aiosqlite.connect("main.db")
         await self.db.execute("""
             CREATE TABLE IF NOT EXISTS users (
-                username TEXT PRIMARY KEY,
+                username TEXT PRIMARY KEY COLLATE NOCASE,
                 password TEXT,
                 token    TEXT,
                 pb_wpm   FLOAT,
@@ -168,6 +168,19 @@ class Database:
                 return True
 
             return False
+
+    async def fetch_profile(self, username: str) -> dict[str, str | float | int] | None:
+        async with self.db.execute("SELECT pb_wpm, pb_acc, moneyz, bio FROM users WHERE username = ?", (username,)) as response:
+            response = await response.fetchone()
+            if response is None:
+                return None
+
+            return {
+                "pb_wpm": response[0],
+                "pb_acc": response[1],
+                "moneyz": response[2],
+                "bio":    response[3]
+            }
 
 db = Database()
 
@@ -318,3 +331,12 @@ async def route_typing(authorization: typing.Annotated[str, Header()], data: Typ
         ((12 * 161) / elapsed) * accuracy,
         accuracy * 100
     )}})
+
+@app.get("/api/profile/{username:str}")
+async def route_profile(username: str) -> JSONResponse:
+    profile = await db.fetch_profile(username)
+    return JSONResponse({
+        "code": 200 if profile else 404,
+        "data": profile
+    }, status_code = 200 if profile else 404)
+

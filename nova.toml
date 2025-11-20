@@ -1,5 +1,0 @@
-[project]
-    mapping  = "src:dist"
-
-[plugins.minify]
-    suffixes = [".html", ".js", ".css"]

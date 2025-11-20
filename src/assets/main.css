@@ -1,7 +1,7 @@
 /* Font */
 @font-face {
     font-family: "Modern DOS";
-    src: url("/assets/ModernDOS8x16.woff2");
+    src: url("/src/assets/ModernDOS8x16.woff2");
 }
 
 /* Page styling */

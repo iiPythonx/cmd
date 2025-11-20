@@ -20,7 +20,7 @@ export const game = {
         if (!(romName in GAME_LIST)) return await terminal.write("game: specified rom does not exist");
 
         // Lazy load in our components
-        const { default: init, WasmNes, Button } = await import("/assets/nes/nes_rust_wasm.js");
+        const { default: init, WasmNes, Button } = await import("/src/assets/nes/nes_rust_wasm.js");
         
         // Button mapping
         const BUTTON_MAPPING = {

@@ -1,5 +1,7 @@
 // Copyright (c) 2025 iiPython
 
+const COMMAND_GROUPS = Object.values(import.meta.glob("./groups/*.js", { eager: true }));
+
 new class {
     constructor() {
         this.element = document.querySelector("main");
@@ -116,9 +118,10 @@ new class {
 
     async register_commands() {
         this.commands = [];
-        for (const module of ["general", "games", "random", "fun", "user"]) {
-            const commands = await import(`/js/groups/${module}.js`);
-            for (const command of Object.values(commands)) this.commands.push(command);
+        for (const group of COMMAND_GROUPS) {
+            for (const command of Object.values(group)) this.commands.push(command);
         }
+
+        this.commands.sort((a, b) => a.category >= b.category);
     }
 };

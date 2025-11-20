@@ -31,7 +31,7 @@ class DeletePayload(BaseModel):
 
 class TypingLog(typing.TypedDict):
     key: str
-    offset: int
+    offset: int | float
 
 class TypingPayload(BaseModel):
     logs: list[TypingLog]

@@ -1,5 +1,13 @@
 [
     {
+        "version": "1.3.0",
+        "changed": [
+            "Reorganization using vite",
+            "Improved command API",
+            "Improved baud rate control (gh/DmmDGM)"
+        ]
+    },
+    {
         "version": "1.2.0",
         "changed": [
             "Added changelog command",

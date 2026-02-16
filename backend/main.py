@@ -13,6 +13,7 @@ from pydantic import BaseModel, StringConstraints
 
 from fastapi import FastAPI, Header
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 # Models
 type Username = typing.Annotated[str, StringConstraints(min_length = 3, max_length = 32)]
@@ -196,6 +197,13 @@ async def lifespan(app: FastAPI) -> typing.AsyncGenerator:
     await db.save()
 
 app = FastAPI(openapi_url = None, lifespan = lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins = ["*"],
+    allow_credentials = True,
+    allow_methods = ["*"],
+    allow_headers = ["*"]
+)
 
 # Routing
 @app.post("/api/account/login")
